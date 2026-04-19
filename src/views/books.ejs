@@ -1,0 +1,59 @@
+<%- include("partials/booksHeader", { pageTitle: pageTitle }) %>
+
+    <main class="books-page">
+      <% if (!loggedIn) { %>
+        <section class="card">
+          <p>Logate para ver tus libros.</p>
+          <a href="/login">Ir a login</a>
+        </section>
+      <% } else { %>
+        <section class="card">
+          <p>Estas logado.</p>
+          <form method="POST" action="/logout">
+            <button type="submit">Cerrar sesion</button>
+          </form>
+        </section>
+
+        <section class="card">
+          <h3>Crear libro</h3>
+          <form method="POST" action="/books" class="book-create-form">
+            <input name="title" type="text" placeholder="Titulo" required />
+            <input name="author" type="text" placeholder="Autor" />
+            <input name="country" type="text" placeholder="Pais" />
+            <input name="language" type="text" placeholder="Idioma" />
+            <input name="pages" type="number" placeholder="Paginas" min="0" />
+            <input name="year" type="number" placeholder="Anio" />
+            <button type="submit">Crear</button>
+          </form>
+        </section>
+
+        <section class="card">
+          <h3>Libros asociados</h3>
+
+          <% if (!books || books.length === 0) { %>
+            <p>No tienes libros todavia.</p>
+          <% } else { %>
+            <ul class="book-list">
+              <% books.forEach((book) => { %>
+                <li class="book-item">
+                  <form method="POST" action="/books/<%= book.id %>/update" class="book-update-form">
+                    <input name="title" type="text" value="<%= book.title %>" placeholder="Titulo" required />
+                    <input name="author" type="text" value="<%= book.author %>" placeholder="Autor" />
+                    <input name="country" type="text" value="<%= book.country %>" placeholder="Pais" />
+                    <input name="language" type="text" value="<%= book.language %>" placeholder="Idioma" />
+                    <input name="pages" type="number" value="<%= book.pages %>" placeholder="Paginas" min="0" />
+                    <input name="year" type="number" value="<%= book.year || "" %>" placeholder="Anio" />
+                    <button type="submit">Actualizar</button>
+                  </form>
+
+                  <form method="POST" action="/books/<%= book.id %>/delete">
+                    <button type="submit" class="delete-button">X</button>
+                  </form>
+                </li>
+              <% }); %>
+            </ul>
+          <% } %>
+        </section>
+      <% } %>
+    </main>
+<%- include("partials/booksFooter") %>

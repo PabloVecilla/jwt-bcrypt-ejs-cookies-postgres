@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <h1>Registro</h1>
+    <form method="POST" action="/register">
+      <input name="username" type="text" placeholder="username" required />
+      <input name="password" type="password" placeholder="password" required />
+      <select name="role">
+        <option value="user">user</option>
+        <option value="admin">admin</option>
+      </select>
+      <button type="submit">Crear cuenta</button>
+    </form>
+
+    <p><a href="/login">Ir a login</a></p>
+
+    <h3>Estado</h3>
+    <div class="result"><%= message || "-" %></div>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <h1>Login</h1>
+    <form method="POST" action="/login">
+      <input name="username" type="text" placeholder="username" required />
+      <input name="password" type="password" placeholder="password" required />
+      <button type="submit">Entrar</button>
+    </form>
+
+    <p><a href="/register">Ir a registro</a> | <a href="/books">Ir a libros</a></p>
+
+    <h3>Estado</h3>
+    <div class="result"><%= message || "-" %></div>
+  </body>
+</html>
