@@ -63,11 +63,13 @@ http://localhost:3000
 
 ```json
 "start": "node --watch src/app.js",
-"db:init": "node create-tables.js"
+"db:init": "node create-tables.js",
+"test": "jest --runInBand"
 ```
 
 - `npm start`: arranca Express con recarga cuando cambian archivos.
 - `npm run db:init`: carga modelos Sequelize y crea tablas si no existen.
+- `npm test`: ejecuta los tests con Jest en serie.
 
 ## Dependencias
 
@@ -82,6 +84,10 @@ http://localhost:3000
 - `bcryptjs`: hashea passwords en registro y compara passwords en login.
 - `jsonwebtoken`: crea y valida JWT.
 - `cookie-parser`: permite leer cookies desde `req.cookies`.
+
+### Desarrollo
+
+- `jest`: framework de testing para pruebas unitarias y mocks.
 
 ## Estructura
 
@@ -116,6 +122,9 @@ public/
   css/
     style.css
 create-tables.js
+tests/
+  math.test.js
+  controllers.test.js
 ```
 
 ## Base de datos
@@ -707,6 +716,52 @@ http://localhost:3000/books
 
 En esta parte no hace falta copiar tokens: el navegador manda automaticamente la cookie `accessToken`.
 
+## Testing
+
+El proyecto tiene tests con `Jest` en:
+
+```txt
+tests/
+```
+
+Para ejecutarlos:
+
+```bash
+npm test
+```
+
+Tests actuales:
+
+- `tests/math.test.js`: prueba unitaria simple sobre `utils/math.js`.
+- `tests/controllers.test.js`: prueba parte de `src/controllers/bookController.js` sin usar la base de datos real.
+
+En los tests de controlador se mockea el modelo:
+
+```js
+jest.mock("../src/models", () => ({
+  Book: mockBook,
+}));
+```
+
+Asi el test controla el comportamiento de Sequelize con respuestas falsas:
+
+```js
+mockBook.findAll.mockResolvedValue([...]);
+mockBook.create.mockResolvedValue({ id: 1, title: "Libro" });
+```
+
+Tambien se crea un `res` falso para comprobar:
+
+```js
+res.status(...).json(...)
+```
+
+Con esto se esta validando que:
+
+- `getBooks` filtra por `req.user.id`.
+- `addBook` devuelve `400` si falta `title`.
+- `addBook` crea el libro con `userId` y responde `201`.
+
 ## Cheatsheet EJS
 
 ### Pintar una variable
@@ -924,3 +979,118 @@ const users = await User.findAll({
 ```
 
 Esto devuelve usuarios con sus libros dentro de `books`.
+
+## Cheatsheet Jest
+
+### Importar lo que quieres probar
+
+```js
+const { add, subtract } = require("../utils/math");
+```
+
+### Estructura basica
+
+```js
+describe("Operaciones matematicas", () => {
+  test("add suma 2 numeros", () => {
+    expect(add(2, 3)).toBe(5);
+  });
+});
+```
+
+- `describe(...)`: agrupa tests relacionados.
+- `test(...)`: define un caso de prueba.
+- `expect(...)`: hace la comprobacion.
+
+### Matchers comunes
+
+```js
+expect(result).toBe(5);
+expect(obj).toEqual({ ok: true });
+expect(mockFn).toHaveBeenCalled();
+expect(mockFn).toHaveBeenCalledWith({ id: 7 });
+```
+
+- `toBe`: compara valores primitivos.
+- `toEqual`: compara arrays u objetos.
+- `toHaveBeenCalled`: comprueba si un mock fue llamado.
+- `toHaveBeenCalledWith`: comprueba con que argumentos fue llamado.
+
+### Tests async
+
+```js
+test("getBooks devuelve libros", async () => {
+  mockBook.findAll.mockResolvedValue([{ id: 1, title: "Libro" }]);
+
+  await getBooks(req, res);
+
+  expect(res.status).toHaveBeenCalledWith(200);
+});
+```
+
+Si la funcion devuelve una promesa, el test debe usar `async/await`.
+
+### Crear mocks
+
+```js
+const mockBook = {
+  findAll: jest.fn(),
+  create: jest.fn(),
+};
+```
+
+`jest.fn()` crea una funcion espia para controlar llamadas y respuestas.
+
+### Mockear modulos
+
+```js
+jest.mock("../src/models", () => ({
+  Book: mockBook,
+}));
+```
+
+Sirve para sustituir dependencias reales por versiones falsas en el test.
+
+### Configurar respuestas del mock
+
+```js
+mockBook.findAll.mockResolvedValue([{ id: 1 }]);
+mockBook.create.mockResolvedValue({ id: 2, title: "Nuevo" });
+```
+
+- `mockResolvedValue(...)`: simula una promesa resuelta.
+- `mockRejectedValue(...)`: simula una promesa rechazada.
+
+### Limpiar mocks entre tests
+
+```js
+beforeEach(() => {
+  jest.clearAllMocks();
+});
+```
+
+Evita que un test arrastre llamadas del anterior.
+
+### Mock rapido de `req` y `res` de Express
+
+```js
+const req = {
+  body: { title: "Libro" },
+  user: { id: 7 },
+};
+
+const fakeRes = () => {
+  const res = {};
+  res.status = jest.fn(() => res);
+  res.json = jest.fn(() => res);
+  return res;
+};
+```
+
+Esto permite probar controladores sin levantar Express ni conectar a PostgreSQL.
+
+### Ejecutar Jest
+
+```bash
+npm test
+```

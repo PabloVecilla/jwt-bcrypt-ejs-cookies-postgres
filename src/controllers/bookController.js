@@ -2,7 +2,7 @@ const { Book } = require("../models");
 
 const getBooks = async (req, res) => {
   try {
-    const books = await Book.findAll({
+    const books = await Book.findAll({ 
       where: { userId: req.user.id },
       attributes: ["id", "title", "author", "country", "language", "pages", "year"],
       order: [["id", "ASC"]],
